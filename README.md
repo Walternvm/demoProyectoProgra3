@@ -6,6 +6,7 @@ Programación III (2026‑1)
 * Heredia Cadenas Guillermo Arturo
 * Noreña Paredes, Steven Daniel
 * Vizcardo Chavez, Juan Diego
+* Aquino Pachas, Walter Sebastian
 ## Preprocesamiento de datos
 Antes de ingresar los datos al arbol, cada pelicula pasa por un proceso de limpieza en 3 pasos.
 ### Objetivo
