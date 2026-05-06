@@ -52,45 +52,28 @@ El programa lee el archivo `data_movies.csv` (formato con comillas escapadas) y 
 El siguiente código mejorado incluye la remoción de stopwords y elimina el límite de 3 películas usado para pruebas.
 
 ```cpp
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <unordered_set>
-using namespace std;
-
-struct Movie {
-    string anho;
-    string titulo;
-    string origen;
-    string director;
-    string cast;
-    string genero;
-    string plot;
-    vector<string> palabras;     // texto limpio sin stopwords
-};
-
-// ---- Funciones auxiliares ----
+// Paso 1: minúsculas
 string aMinusculas(string texto) {
     transform(texto.begin(), texto.end(), texto.begin(), ::tolower);
     return texto;
 }
 
+// Paso 2: eliminar puntuación, referencias [1] y caracteres especiales
 string eliminarPuntuacion(string texto) {
     string resultado;
     bool dentroDeCorchete = false;
     for (unsigned char letra : texto) {
-        if (letra == '[') dentroDeCorchete = true;
-        else if (letra == ']') dentroDeCorchete = false;
-        else if (dentroDeCorchete) continue;
-        else if (letra >= 128) resultado += ' ';
-        else if (ispunct(letra)) resultado += ' ';
-        else resultado += letra;
+        if      (letra == '[')      dentroDeCorchete = true;
+        else if (letra == ']')      dentroDeCorchete = false;
+        else if (dentroDeCorchete)  continue;
+        else if (letra >= 128)      resultado += ' '; // guión largo, tildes, etc.
+        else if (ispunct(letra))    resultado += ' ';
+        else                        resultado += letra;
     }
     return resultado;
 }
 
+// Paso 3: separar en palabras individuales
 vector<string> separarEnPalabras(string texto) {
     vector<string> palabras;
     string palabra;
@@ -108,7 +91,7 @@ vector<string> separarEnPalabras(string texto) {
     return palabras;
 }
 
-// Remueve palabras comunes en inglés (stopwords)
+// Paso 4: stopwords
 const unordered_set<string> stopwords = {
     "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
     "of", "with", "by", "from", "is", "are", "was", "were", "be", "been",
@@ -119,75 +102,14 @@ const unordered_set<string> stopwords = {
     "too", "just", "about", "also", "very", "s", "t", "ll", "ve", "re"
 };
 
+// Aplica los 4 pasos en orden
 vector<string> limpiarCampo(string texto) {
-    vector<string> palabras = separarEnPalabras(eliminarPuntuacion(aMinusculas(texto)));
-    // Eliminar stopwords
+    vector<string> palabras = separarEnPalabras(
+                                  eliminarPuntuacion(
+                                      aMinusculas(texto)));
     vector<string> filtradas;
-    for (const string& p : palabras) {
+    for (const string& p : palabras)
         if (stopwords.find(p) == stopwords.end())
             filtradas.push_back(p);
-    }
     return filtradas;
-}
-
-int main() {
-    ifstream archivo("data_movies.csv");
-    if (!archivo.is_open()) {
-        cout << "No se pudo abrir el archivo" << endl;
-        return 1;
-    }
-
-    char letra;
-    bool enComillas = false;
-    bool esPrimeraLinea = true;
-    string campoActual;
-    vector<string> fila;
-    vector<Movie> movies;
-
-    while (archivo.get(letra)) {
-        if (letra == '"') {
-            enComillas = !enComillas;
-        }
-        else if (letra == ',' && !enComillas) {
-            fila.push_back(campoActual);
-            campoActual = "";
-        }
-        else if (letra == '\n') {
-            fila.push_back(campoActual);
-            campoActual = "";
-
-            if (esPrimeraLinea) {
-                esPrimeraLinea = false;
-                fila.clear();
-                continue;
-            }
-
-            if (fila.size() >= 7) {
-                Movie m;
-                m.anho     = fila[0];
-                m.titulo   = fila[1];
-                m.origen   = fila[2];
-                m.director = fila[3];
-                m.cast     = fila[4];
-                m.genero   = fila[5];
-                m.plot     = fila[6];
-
-                string todoElTexto = m.titulo   + " " + m.origen   + " " +
-                                     m.director + " " + m.cast     + " " +
-                                     m.genero   + " " + m.plot;
-                m.palabras = limpiarCampo(todoElTexto);
-                movies.push_back(m);
-            }
-            fila.clear();
-            // no hay límite: se lee todo el archivo
-        }
-        else if (letra != '\r') {
-            campoActual += letra;
-        }
-    }
-    archivo.close();
-
-    // A partir de aquí se construye el suffix tree y se inicia la interfaz...
-    cout << "Películas cargadas: " << movies.size() << endl;
-    return 0;
 }
