@@ -134,3 +134,53 @@ vector<string> limpiarCampo(string texto) {
     return filtradas;
 }
 ```
+## Pseudo-código de inserción al árbol
+ 
+Una vez que las palabras están limpias, se insertan en el Suffix Trie. Por cada película se generan todos los sufijos de cada palabra y se insertan en el árbol apuntando al ID de esa película.
+ 
+```
+PARA cada pelicula en el CSV:
+ 
+    texto = titulo + origen + director + cast + genero + plot
+    palabras = limpiarCampo(texto)
+ 
+    PARA cada palabra en palabras:
+ 
+        PARA i desde 0 hasta largo(palabra):
+            sufijo = palabra desde posicion i hasta el final
+ 
+            nodo = raiz del arbol
+            PARA cada letra en sufijo:
+                SI nodo NO tiene hijo con esa letra:
+                    crear nuevo nodo hijo
+                nodo = hijo con esa letra
+                nodo.ids.agregar(id de pelicula)
+```
+ 
+### Ejemplo visual de inserción
+ 
+```
+Película #1: "Kansas Saloon Smashers"
+palabra limpia: "kansas"
+
+sufijo "kansas":  raiz -> k -> a -> n -> s -> a -> s
+sufijo "ansas":   raiz -> a -> n -> s -> a -> s
+sufijo "nsas":    raiz -> n -> s -> a -> s
+sufijo "sas":     raiz -> s -> a -> s
+sufijo "as":      raiz -> a -> s
+sufijo "s":       raiz -> s
+```
+ 
+Gracias a esto, buscar `"kan"`, `"ans"`, `"nsa"` o cualquier fragmento de `"kansas"` lleva directamente al resultado.
+ 
+### Tags especiales
+ 
+Los campos director, cast y género se indexan con un prefijo para poder buscarlos de forma exacta sin confundirlos con palabras del plot:
+ 
+```
+director "george fleming"  ->  se inserta como  "dir:georgefleming"
+género   "drama"           ->  se inserta como  "gen:drama"
+actor    "john wayne"      ->  se inserta como  "cas:johnwayne"
+```
+ 
+Así, buscar por director no confunde resultados con películas que mencionan ese nombre en el plot.
