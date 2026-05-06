@@ -36,6 +36,12 @@ El sistema muestra las cinco mejores coincidencias, permite navegar entre págin
 ---
 
 ## 3. Pre‑procesamiento de los datos
+### Objetivo
+Convertir el texto crudo del CSV en palabras limpias y uniformes, listas para ser ingresadas al Suffix Trie.
+ 
+### Campos procesados
+Se procesan todos los campos de cada película: **título, origen, director, cast, género y plot**. Todos se unen en un solo texto y pasan por el mismo proceso de limpieza.
+
 El programa lee el archivo `data_movies.csv` (formato con comillas escapadas) y realiza:
 
 1. **Limpieza**
