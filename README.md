@@ -1,4 +1,11 @@
-# Buscador de Peliculas
+# Plataforma de Streaming – Proyecto Parte 1
+Programación III (2026‑1)
+
+**Integrantes**
+* Collazos Solis, Maxwell Lupo Gregorio
+* Heredia Cadenas Guillermo Arturo
+* Noreña Paredes, Steven Daniel
+* Vizcardo Chavez, Juan Diego
 ## Preprocesamiento de datos
 Antes de ingresar los datos al arbol, cada pelicula pasa por un proceso de limpieza en 3 pasos.
 ### Objetivo
