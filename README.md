@@ -49,15 +49,31 @@ El programa lee el archivo `data_movies.csv` (formato con comillas escapadas) y 
 4. **Construcción de vector de palabras por película**
     - Cada película guarda un `vector<string>` con las palabras limpias (para el cálculo de similitud posterior).
 
-El siguiente código mejorado incluye la remoción de stopwords y elimina el límite de 3 películas usado para pruebas.
-
+### Ejemplo completo
+```
+Entrada CSV:
+"The Martyred Presidents—Abraham Lincoln, James A. Garfield[1]"
+ 
+Paso 1: minusculas
+"the martyred presidents—abraham lincoln, james a. garfield[1]"
+ 
+Paso 2: eliminar puntuacion y caracteres especiales
+"the martyred presidents abraham lincoln  james a  garfield "
+ 
+Paso 3: separar en palabras
+["the", "martyred", "presidents", "abraham", "lincoln", "james", "a", "garfield"]
+ 
+Paso 4: eliminar stopwords  ->  se eliminan "the" y "a"
+["martyred", "presidents", "abraham", "lincoln", "james", "garfield"]
+```
+### Codigo del pre-procesamiento
 ```cpp
-// Paso 1: minúsculas
+// Paso 1: minusculas
 string aMinusculas(string texto) {
     transform(texto.begin(), texto.end(), texto.begin(), ::tolower);
     return texto;
 }
-
+ 
 // Paso 2: eliminar puntuación, referencias [1] y caracteres especiales
 string eliminarPuntuacion(string texto) {
     string resultado;
@@ -72,7 +88,7 @@ string eliminarPuntuacion(string texto) {
     }
     return resultado;
 }
-
+ 
 // Paso 3: separar en palabras individuales
 vector<string> separarEnPalabras(string texto) {
     vector<string> palabras;
@@ -90,7 +106,7 @@ vector<string> separarEnPalabras(string texto) {
     if (!palabra.empty()) palabras.push_back(palabra);
     return palabras;
 }
-
+ 
 // Paso 4: stopwords
 const unordered_set<string> stopwords = {
     "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for",
@@ -101,15 +117,14 @@ const unordered_set<string> stopwords = {
     "these", "those", "not", "no", "nor", "so", "if", "then", "than",
     "too", "just", "about", "also", "very", "s", "t", "ll", "ve", "re"
 };
-
+ 
 // Aplica los 4 pasos en orden
 vector<string> limpiarCampo(string texto) {
-    vector<string> palabras = separarEnPalabras(
-                                  eliminarPuntuacion(
-                                      aMinusculas(texto)));
+    vector<string> palabras = separarEnPalabras(eliminarPuntuacion(aMinusculas(texto)));
     vector<string> filtradas;
     for (const string& p : palabras)
         if (stopwords.find(p) == stopwords.end())
             filtradas.push_back(p);
     return filtradas;
 }
+```
