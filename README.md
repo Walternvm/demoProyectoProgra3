@@ -184,3 +184,184 @@ actor    "john wayne"      ->  se inserta como  "cas:johnwayne"
 ```
  
 Así, buscar por director no confunde resultados con películas que mencionan ese nombre en el plot.
+
+## 🌳 3. Estructura de datos: Suffix Trie
+ 
+### ¿Por qué un Suffix Trie?
+ 
+El proyecto requiere búsqueda por subcadenas: buscar `"bar"` debe encontrar películas con `"bartender"`, `"harbor"` o `"bar"`. Un BST o AVL solo encuentra palabras exactas. El Suffix Trie resuelve esto guardando **todos los sufijos posibles** de cada palabra del dataset.
+ 
+| Característica | BST / AVL | Suffix Trie |
+|---|---|---|
+| Buscar palabra exacta (`"kansas"`) | ✅ | ✅ |
+| Buscar por prefijo (`"kan"` → `"kansas"`) | ❌ | ✅ |
+| Buscar subcadena (`"bar"` → `"bartender"`) | ❌ | ✅ |
+| Buscar por fragmento en plot y título | ❌ | ✅ |
+| Velocidad con 34,887 películas | lenta | rápida |
+ 
+### Estructura de un nodo
+ 
+Cada nodo del árbol tiene:
+- **children[128]** — un puntero hijo por cada carácter ASCII posible
+- **ids** — conjunto de IDs de películas donde aparece ese sufijo
+```
+Nodo raíz
+├── 'b' → Nodo
+│    └── 'a' → Nodo
+│         └── 'r' → Nodo  ← ids = [1, 5, 12]  (películas con "bar...")
+│              └── 't' → Nodo
+│                   └── ...  ← ids = [1]  (películas con "bart...")
+├── 'k' → Nodo
+│    └── 'a' → Nodo
+│         └── 'n' → ...  ← ids = [1]  (películas con "kan...")
+└── ...
+```
+ 
+### Algoritmo de inserción
+ 
+```
+FUNCIÓN insertarToken(token, idPelicula):
+    longitud = largo(token)
+ 
+    PARA start desde 0 hasta longitud:
+        nodo = raiz
+        limite = min(longitud, start + 25)   // máximo 25 chars por sufijo
+        PARA i desde start hasta limite:
+            letra = token[i]
+            SI nodo no tiene hijo con esa letra:
+                crear nodo hijo vacío
+            nodo = nodo.children[letra]
+            nodo.ids.agregar(idPelicula)     // marca esta película en cada nodo
+```
+ 
+El límite de 25 caracteres por sufijo es un balance entre velocidad y uso de memoria — sufijos muy largos raramente aparecen en búsquedas reales.
+ 
+### Algoritmo de búsqueda por subcadena
+ 
+```
+FUNCIÓN buscar(textoBusqueda):
+    palabrasBuscadas = limpiarCampo(textoBusqueda)
+    resultados = conjunto vacío
+ 
+    PARA cada palabra en palabrasBuscadas:
+        nodo = raiz del arbol
+ 
+        PARA cada letra en palabra:
+            SI nodo tiene hijo con esa letra:
+                nodo = ese hijo
+            SI NO:
+                no hay coincidencias → pasar a siguiente palabra
+                break
+ 
+        recolectar todos los ids del nodo actual
+        agregar a resultados
+ 
+    retornar resultados
+```
+ 
+### Algoritmo de búsqueda por frase
+ 
+Cuando el usuario busca una frase de varias palabras, se busca cada palabra por separado y se toma la **unión** de todas las películas encontradas. Las películas que aparecen en más palabras buscadas obtienen mayor puntaje de relevancia.
+ 
+```
+FUNCIÓN buscarFrase("barco fantasma"):
+    palabras = ["barco", "fantasma"]
+    resultado = buscar("barco") ∪ buscar("fantasma")
+    ordenar resultado por relevancia
+    retornar resultado
+```
+ 
+### Ejemplo visual de búsqueda
+ 
+```
+Usuario busca: "bar"
+ 
+↓ limpiarCampo()  →  ["bar"]
+ 
+↓ recorrer el árbol letra por letra
+raiz → 'b' → 'a' → 'r'  ✅ nodo encontrado
+ 
+↓ recolectar ids
+ids = [1, 5, 12]
+ 
+↓ traducir a películas
+#1  → "Kansas Saloon Smashers"  (contiene "bartender")
+#5  → "The Pirate Ship"         (contiene "harbor")
+#12 → "The Barber Shop"         (contiene "bar")
+ 
+✅ 3 películas encontradas
+```
+ 
+### Ranking de resultados
+ 
+Los resultados se ordenan por relevancia. Cada aparición de la búsqueda en distintos campos suma puntos distintos:
+ 
+```
+Aparición en título    →  +3 puntos
+Aparición en director  →  +2 puntos
+Aparición en plot      →  +1 punto
+```
+ 
+---
+ 
+## 🖥️ 4. Avance de la interfaz
+ 
+El programa corre en consola con un menú principal de navegación:
+ 
+```
+==================================================
+         PLATAFORMA DE STREAMING
+==================================================
+1. Buscar pelicula por palabras
+2. Buscar por director
+3. Buscar por genero
+4. Buscar por actor
+5. Ver 'Ver mas tarde'
+6. Ver recomendaciones
+7. Salir
+Opcion: 1
+```
+ 
+**Búsqueda y resultados:**
+```
+Ingrese palabra o frase a buscar: saloon
+ 
+Buscando: "saloon"...
+Resultados encontrados: 8
+ 
+--- Resultados 1-5 ---
+1. Kansas Saloon Smashers (1901)  - Relevancia: 6
+2. The Saloon Keeper (1904)       - Relevancia: 4
+3. Cowboy Saloon (1910)           - Relevancia: 3
+4. The Last Saloon (1913)         - Relevancia: 2
+5. Saloon Girls (1920)            - Relevancia: 1
+ 
+Opcion (1-5 para ver pelicula, 6 para mas resultados, 0 para volver): 1
+```
+ 
+**Detalle de película:**
+```
+==================================================
+Titulo:   Kansas Saloon Smashers (1901)
+Director: Unknown
+Cast:
+Genero:   unknown
+Origen:   American
+Sinopsis: A bartender is working at a saloon, serving drinks...
+==================================================
+1. Dar Like
+2. Ver mas tarde
+3. Volver
+Opcion:
+```
+ 
+### Funcionalidades implementadas
+ 
+- **Búsqueda por palabras o frases** — encuentra películas por cualquier subcadena en título o sinopsis
+- **Búsqueda por tag** — busca exactamente por director, género o actor sin confundir con el plot
+- **Paginación** — muestra 5 resultados a la vez, con opción de ver más
+- **Ranking por relevancia** — título vale más que plot, director vale más que sinopsis
+- **Likes** — marca películas favoritas
+- **Ver más tarde** — guarda películas para ver después
+- **Recomendaciones** — sugiere películas similares a las que diste like, basado en palabras en común
+ 
