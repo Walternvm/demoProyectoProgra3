@@ -220,38 +220,26 @@ Gracias a esto, buscar "kan", "ans", "nsa" o cualquier fragmento de "kansas" lle
  
 ---
  
-## 3. Estructura de datos: Suffix Trie
- 
+## 3. Elección de la estructura de datos: **Suffix Tree**
 ### Justificación
- 
-La búsqueda debe soportar cualquier subcadena: palabra completa, fragmento de palabra o frase. Por ejemplo, buscar "bar" debe encontrar películas con "bartender", "harbor" o "bar".
- 
-Un Suffix Trie permite encontrar todas las ocurrencias de un patrón en tiempo proporcional a la longitud del patrón, una vez construido el índice. A diferencia de un Trie normal de palabras, un Suffix Trie almacena todos los sufijos de cada token, por lo que responde de forma natural a búsquedas por subcadena.
- 
-| Característica | BST / AVL | Suffix Trie |
-|---|---|---|
-| Buscar palabra exacta | si | si |
-| Buscar por prefijo ("kan" -> "kansas") | no | si |
-| Buscar subcadena ("bar" -> "bartender") | no | si |
-| Velocidad con 34,887 películas | lenta | rapida |
- 
-### Estructura de un nodo
- 
-Cada nodo del árbol tiene:
-- children[128] — un puntero hijo por cada carácter ASCII posible
-- ids — conjunto de IDs de tokens donde aparece ese sufijo
-```
-Nodo raiz
-|-- 'b' -> Nodo
-|    |-- 'a' -> Nodo
-|         |-- 'r' -> Nodo   [ids: token "bartender", token "harbor"]
-|              |-- 't' -> Nodo
-|                   |-- ... [ids: token "bartender"]
-|-- 'k' -> Nodo
-|    |-- 'a' -> Nodo
-|         |-- 'n' -> ...    [ids: token "kansas"]
-```
- 
+- La búsqueda debe soportar **cualquier subcadena** (palabra completa, fragmento de palabra o frase).
+- Un **suffix tree** (o su variante simple, un **suffix trie**) permite encontrar todas las ocurrencias de un patrón en tiempo proporcional a la longitud del patrón, una vez construido el índice.
+- A diferencia de un Trie normal de palabras, un suffix tree almacena todos los sufijos del texto concatenado, por lo que responde de forma natural a consultas como `"bar"` (que encuentra *barco*, *embarcación*, etc.).
+- La implementación puede mantenerse con **sintaxis básica de C++** (arreglos de punteros, vectores) para cumplir con el requisito de simplicidad.
+
+### Construcción del índice generalizado
+1. Se pre‑procesa el archivo CSV y se genera un texto limpio por película (título + sinopsis + tags, sin stopwords).
+2. Se concatena el texto de todas las películas, separando cada película con un carácter único no imprimible (e.g., `'$'`).
+3. Se insertan **todos los sufijos** de cada película en un **Suffix Trie**. Cada nodo almacena una lista de IDs de las películas en las que aparece ese sufijo.
+4. Durante la inserción se mapea cada sufijo a su ID de película (duplicando la referencia en nodos compartidos).
+
+### Búsqueda de patrones
+- **Subcadena suelta**: se recorre el trie con los caracteres del patrón. Si se llega a un nodo, se devuelven todos los IDs de película almacenados en él y en sus descendientes (todos los sufijos que empiezan con el patrón).
+- **Frase (varias palabras)**: se divide la frase en palabras, se busca cada palabra por separado y se realiza la **intersección** de los conjuntos de películas resultantes.
+- **Tag**: los campos `director`, `cast`, `género`, etc., se concatenan con un prefijo fijo (ej. `director:spielberg`). Al buscar por tag se busca la cadena `"director:" + nombre` y se recuperan las películas que contengan ese prefijo exacto. Esto evita coincidencias en otros campos.
+
+---
+
 ### Algoritmo de inserción
  
 ```
