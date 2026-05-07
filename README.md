@@ -12,7 +12,7 @@ Programación III (2026‑1)
 
 ## Descripción del proyecto
  
-Se implementa una plataforma de streaming que permite buscar películas por palabras, frases o subcadenas en el título y la sinopsis, así como por tags (director, cast, género, etc.). El sistema muestra las mejores coincidencias ordenadas por relevancia, permite navegar entre páginas de resultados, visualizar la sinopsis completa y marcar "Like" o "Ver más tarde".
+Se implementa una plataforma de streaming que permite buscar peliculas por palabras, frases o subcadenas en el titulo y la sinopsis, así como por tags (director, cast, genero, etc.). El sistema muestra las mejores coincidencias ordenadas por relevancia, permite navegar entre paginas de resultados, visualizar la sinopsis completa y marcar "Like" o "Ver mas tarde".
  
 ---
 
@@ -22,13 +22,13 @@ Se implementa una plataforma de streaming que permite buscar películas por pala
 Convertir el texto crudo del CSV en palabras limpias y uniformes, listas para ser ingresadas al Suffix Trie.
  
 ### Campos procesados
-Se procesan todos los campos de cada película: título, origen, director, cast, género y plot. Todos se unen en un solo texto y pasan por el mismo proceso de limpieza.
+Se procesan todos los campos de cada película: título, origen, director, cast, genero y plot. Todos se unen en un solo texto y pasan por el mismo proceso de limpieza.
  
 ### Pasos de limpieza
  
-**Paso 1 — Convertir a minúsculas**
+**Paso 1 — Convertir a minusculas**
  
-Todo el texto se convierte a minúsculas para que la búsqueda no distinga entre mayúsculas y minúsculas. Sin esto, "Kansas" y "kansas" serían nodos distintos en el árbol.
+Todo el texto se convierte a minusculas para que la busqueda no distinga entre mayusculas y minusculas. Sin esto, "Kansas" y "kansas" serían nodos distintos en el arbol.
  
 ```
 "Kansas Saloon Smashers"  ->  "kansas saloon smashers"
@@ -36,7 +36,7 @@ Todo el texto se convierte a minúsculas para que la búsqueda no distinga entre
  
 **Paso 2 — Eliminar puntuación y caracteres especiales**
  
-Se recorre el texto carácter por carácter. Todo lo que no sea letra o número se reemplaza por un espacio. También se eliminan referencias como [1] que aparecen en los plots, y caracteres especiales como el guión largo.
+Se recorre el texto caracter por caracter. Todo lo que no sea letra o número se reemplaza por un espacio. También se eliminan referencias como [1] que aparecen en los plots, y caracteres especiales como el guión largo.
  
 ```
 "bartender, serving drinks.[1]"  ->  "bartender  serving drinks "
@@ -45,7 +45,7 @@ Se recorre el texto carácter por carácter. Todo lo que no sea letra o número 
  
 **Paso 3 — Separar en palabras**
  
-El texto se divide en palabras individuales usando los espacios como separador. Los espacios dobles del paso anterior se ignoran automáticamente. Cada palabra resultante es un token que se insertará en el Suffix Trie.
+El texto se divide en palabras individuales usando los espacios como separador. Los espacios dobles del paso anterior se ignoran automaticamente. Cada palabra resultante es un token que se insertara en el Suffix Trie.
  
 ```
 "bartender  serving drinks "  ->  ["bartender", "serving", "drinks"]
@@ -53,7 +53,7 @@ El texto se divide en palabras individuales usando los espacios como separador. 
  
 **Paso 4 — Eliminar stopwords**
  
-Se eliminan palabras que aparecen en casi todas las películas y no aportan valor a la búsqueda: artículos, preposiciones, conjunciones, etc.
+Se eliminan palabras que aparecen en casi todas las películas y no aportan valor a la busqueda: artículos, preposiciones, conjunciones, etc.
  
 ```
 ["the", "bartender", "is", "serving", "drinks", "a", "customers"]
@@ -78,10 +78,10 @@ Las stopwords filtradas son:
 Entrada CSV:
 "The Martyred Presidents—Abraham Lincoln, James A. Garfield[1]"
  
-Paso 1: minúsculas
+Paso 1: minusculas
 "the martyred presidents—abraham lincoln, james a. garfield[1]"
  
-Paso 2: eliminar puntuación y caracteres especiales
+Paso 2: eliminar puntuacion y caracteres especiales
 "the martyred presidents abraham lincoln  james a  garfield "
  
 Paso 3: separar en palabras
@@ -93,16 +93,16 @@ Paso 4: eliminar stopwords  (se eliminan "the" y "a")
 Resultado: tokens listos para insertar en el Suffix Trie
 ```
  
-### Código del pre-procesamiento
+### Codigo del pre-procesamiento
  
 ```cpp
-// Paso 1: minúsculas
+// Paso 1: minusculas
 string aMinusculas(string texto) {
     transform(texto.begin(), texto.end(), texto.begin(), ::tolower);
     return texto;
 }
  
-// Paso 2: eliminar puntuación, referencias [1] y caracteres especiales
+// Paso 2: eliminar puntuacion, referencias [1] y caracteres especiales
 string eliminarPuntuacion(string texto) {
     string resultado;
     bool dentroDeCorchete = false;
@@ -151,9 +151,9 @@ vector<string> limpiarCampo(string texto) {
  
 ---
  
-## 2. Pseudo-código de inserción al árbol
+## 2. Pseudo-codigo de inserción al arbol
  
-Una vez que los tokens están limpios, se insertan en el Suffix Trie. Por cada película se generan todos los sufijos de cada token y se recorre el árbol letra por letra, creando nodos donde no existen.
+Una vez que los tokens están limpios, se insertan en el Suffix Trie. Por cada película se generan todos los sufijos de cada token y se recorre el arbol letra por letra, creando nodos donde no existen.
  
 ```
 PARA cada pelicula en el CSV:
@@ -201,31 +201,29 @@ sufijo "as":      raiz -> a -> s                       [pelicula #1]
 sufijo "s":       raiz -> s                            [pelicula #1]
 ```
  
-Gracias a esto, buscar "kan", "ans", "nsa" o cualquier fragmento de "kansas" lleva directamente al resultado sin recorrer las 34,887 películas.
- 
 ---
  
-## 3. Elección de la estructura de datos: **Suffix Tree**
-### Justificación
-- La búsqueda debe soportar **cualquier subcadena** (palabra completa, fragmento de palabra o frase).
-- Un **suffix tree** (o su variante simple, un **suffix trie**) permite encontrar todas las ocurrencias de un patrón en tiempo proporcional a la longitud del patrón, una vez construido el índice.
+## 3. Eleccion de la estructura de datos: **Suffix Tree**
+### Justificacion
+- La busqueda debe soportar **cualquier subcadena** (palabra completa, fragmento de palabra o frase).
+- Un **suffix tree** (o su variante simple, un **suffix trie**) permite encontrar todas las ocurrencias de un patron en tiempo proporcional a la longitud del patron, una vez construido el índice.
 - A diferencia de un Trie normal de palabras, un suffix tree almacena todos los sufijos del texto concatenado, por lo que responde de forma natural a consultas como `"bar"` (que encuentra *barco*, *embarcación*, etc.).
-- La implementación puede mantenerse con **sintaxis básica de C++** (arreglos de punteros, vectores) para cumplir con el requisito de simplicidad.
+- La implementacion puede mantenerse con **sintaxis basica de C++** (arreglos de punteros, vectores) para cumplir con el requisito de simplicidad.
 
-### Construcción del índice generalizado
-1. Se pre‑procesa el archivo CSV y se genera un texto limpio por película (título + sinopsis + tags, sin stopwords).
-2. Se concatena el texto de todas las películas, separando cada película con un carácter único no imprimible (e.g., `'$'`).
-3. Se insertan **todos los sufijos** de cada película en un **Suffix Trie**. Cada nodo almacena una lista de IDs de las películas en las que aparece ese sufijo.
-4. Durante la inserción se mapea cada sufijo a su ID de película (duplicando la referencia en nodos compartidos).
+### Construccion del índice generalizado
+1. Se pre‑procesa el archivo CSV y se genera un texto limpio por pelicula (titulo + sinopsis + tags, sin stopwords).
+2. Se concatena el texto de todas las peliculas, separando cada pelicula con un carácter unico no imprimible (e.g., `'$'`).
+3. Se insertan **todos los sufijos** de cada película en un **Suffix Trie**. Cada nodo almacena una lista de IDs de las peliculas en las que aparece ese sufijo.
+4. Durante la insercion se mapea cada sufijo a su ID de película (duplicando la referencia en nodos compartidos).
 
 ### Búsqueda de patrones
-- **Subcadena suelta**: se recorre el trie con los caracteres del patrón. Si se llega a un nodo, se devuelven todos los IDs de película almacenados en él y en sus descendientes (todos los sufijos que empiezan con el patrón).
-- **Frase (varias palabras)**: se divide la frase en palabras, se busca cada palabra por separado y se realiza la **intersección** de los conjuntos de películas resultantes.
+- **Subcadena suelta**: se recorre el trie con los caracteres del patron. Si se llega a un nodo, se devuelven todos los IDs de pelicula almacenados en el y en sus descendientes (todos los sufijos que empiezan con el patron).
+- **Frase (varias palabras)**: se divide la frase en palabras, se busca cada palabra por separado y se realiza la **interseccion** de los conjuntos de peliculas resultantes.
 - **Tag**: los campos `director`, `cast`, `género`, etc., se concatenan con un prefijo fijo (ej. `director:spielberg`). Al buscar por tag se busca la cadena `"director:" + nombre` y se recuperan las películas que contengan ese prefijo exacto. Esto evita coincidencias en otros campos.
 
 ---
 
-### Algoritmo de inserción
+### Algoritmo de insercion
  
 ```
 FUNCION agregarToken(token, idToken):
@@ -275,7 +273,7 @@ FUNCION buscarFrase(frase):
     retornar resultados
 ```
  
-### Ejemplo visual de búsqueda
+### Ejemplo visual de busqueda
  
 ```
 Usuario busca: "bar"
@@ -298,7 +296,7 @@ Resultado: 3 peliculas encontradas
  
 ## 4. Avance de la interfaz
  
-El programa corre en consola con un menú principal:
+El programa corre en consola con un menu principal:
  
 ```
 ==================================================
@@ -314,7 +312,7 @@ El programa corre en consola con un menú principal:
 Opcion: 1
 ```
  
-Búsqueda y resultados:
+Busqueda y resultados:
 ```
 Ingrese palabra o frase a buscar: saloon
  
@@ -331,7 +329,7 @@ Resultados encontrados: 8
 Opcion (1-5 para ver pelicula, 6 para mas resultados, 0 para volver): 1
 ```
  
-Detalle de película:
+Detalle de pelicula:
 ```
 ==================================================
 Titulo:   Kansas Saloon Smashers (1901)
