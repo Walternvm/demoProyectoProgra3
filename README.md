@@ -22,7 +22,7 @@ Se implementa una plataforma de streaming que permite buscar peliculas por palab
 Convertir el texto crudo del CSV en palabras limpias y uniformes, listas para ser ingresadas al Suffix Trie.
  
 ### Campos procesados
-Se procesan todos los campos de cada película: título, origen, director, cast, genero y plot. Todos se unen en un solo texto y pasan por el mismo proceso de limpieza.
+Se procesan todos los campos de cada película: titulo, origen, director, cast, genero y plot. Todos se unen en un solo texto y pasan por el mismo proceso de limpieza.
  
 ### Pasos de limpieza
  
