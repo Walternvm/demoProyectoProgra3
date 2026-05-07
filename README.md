@@ -203,7 +203,7 @@ sufijo "s":       raiz -> s                            [pelicula #1]
  
 ---
  
-## 3. Eleccion de la estructura de datos: **Suffix Tree**
+## 3. Eleccion de la estructura de datos: **Suffix Trie**
 ### Justificacion
 - La busqueda debe soportar **cualquier subcadena** (palabra completa, fragmento de palabra o frase).
 - Un **suffix tree** (o su variante simple, un **suffix trie**) permite encontrar todas las ocurrencias de un patron en tiempo proporcional a la longitud del patron, una vez construido el índice.
