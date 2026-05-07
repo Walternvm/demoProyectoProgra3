@@ -1,4 +1,4 @@
-# Plataforma de Streaming – Proyecto Final
+# Plataforma de Streaming – Proyecto Parte 1
 Programación III (2026‑1)
 
 **Integrantes**
@@ -6,6 +6,7 @@ Programación III (2026‑1)
 * Heredia Cadenas Guillermo Arturo
 * Noreña Paredes, Steven Daniel
 * Vizcardo Chavez, Juan Diego
+* Aquino Pachas, Walter Sebastian
 
 ---
 
@@ -14,25 +15,11 @@ Programación III (2026‑1)
 Se implementa una plataforma de streaming que permite buscar películas por palabras, frases o subcadenas en el título y la sinopsis, así como por tags (director, cast, género, etc.). El sistema muestra las mejores coincidencias ordenadas por relevancia, permite navegar entre páginas de resultados, visualizar la sinopsis completa y marcar "Like" o "Ver más tarde".
  
 ---
- 
-## Estructura del proyecto
- 
-```
-├── data_movies.csv        # Dataset con 34,887 películas
-├── main.cpp               # Punto de entrada del programa
-├── movie.h                # Estructura de datos de una película
-├── preprocesador.h/.cpp   # Limpieza y lectura del CSV
-├── suffix_trie.h/.cpp     # Árbol de búsqueda (Suffix Trie)
-├── sistema.h/.cpp         # Lógica de búsqueda e interfaz
-└── README.md              # Documentación
-```
- 
----
- 
+
 ## 1. Pre-procesamiento de datos
  
 ### Objetivo
-Convertir el texto crudo del CSV en palabras limpias y uniformes, listas para ser ingresadas al Suffix Trie. Este paso es crítico porque el árbol indexa exactamente los tokens que recibe.
+Convertir el texto crudo del CSV en palabras limpias y uniformes, listas para ser ingresadas al Suffix Trie.
  
 ### Campos procesados
 Se procesan todos los campos de cada película: título, origen, director, cast, género y plot. Todos se unen en un solo texto y pasan por el mismo proceso de limpieza.
@@ -44,7 +31,7 @@ Se procesan todos los campos de cada película: título, origen, director, cast,
 Todo el texto se convierte a minúsculas para que la búsqueda no distinga entre mayúsculas y minúsculas. Sin esto, "Kansas" y "kansas" serían nodos distintos en el árbol.
  
 ```
-"Kansas Saloon Smashers"  →  "kansas saloon smashers"
+"Kansas Saloon Smashers"  ->  "kansas saloon smashers"
 ```
  
 **Paso 2 — Eliminar puntuación y caracteres especiales**
@@ -52,8 +39,8 @@ Todo el texto se convierte a minúsculas para que la búsqueda no distinga entre
 Se recorre el texto carácter por carácter. Todo lo que no sea letra o número se reemplaza por un espacio. También se eliminan referencias como [1] que aparecen en los plots, y caracteres especiales como el guión largo.
  
 ```
-"bartender, serving drinks.[1]"  →  "bartender  serving drinks "
-"presidents—abraham"             →  "presidents abraham"
+"bartender, serving drinks.[1]"  ->  "bartender  serving drinks "
+"presidents—abraham"             ->  "presidents abraham"
 ```
  
 **Paso 3 — Separar en palabras**
@@ -61,7 +48,7 @@ Se recorre el texto carácter por carácter. Todo lo que no sea letra o número 
 El texto se divide en palabras individuales usando los espacios como separador. Los espacios dobles del paso anterior se ignoran automáticamente. Cada palabra resultante es un token que se insertará en el Suffix Trie.
  
 ```
-"bartender  serving drinks "  →  ["bartender", "serving", "drinks"]
+"bartender  serving drinks "  ->  ["bartender", "serving", "drinks"]
 ```
  
 **Paso 4 — Eliminar stopwords**
@@ -70,7 +57,7 @@ Se eliminan palabras que aparecen en casi todas las películas y no aportan valo
  
 ```
 ["the", "bartender", "is", "serving", "drinks", "a", "customers"]
-                    ↓ eliminar stopwords
+                 eliminar stopwords
 ["bartender", "serving", "drinks", "customers"]
 ```
  
@@ -153,9 +140,7 @@ const unordered_set<string> stopwords = { "a", "an", "the", "and", ... };
  
 // Aplica los 4 pasos y devuelve los tokens listos para el árbol
 vector<string> limpiarCampo(string texto) {
-    vector<string> palabras = separarEnPalabras(
-                                  eliminarPuntuacion(
-                                      aMinusculas(texto)));
+    vector<string> palabras = separarEnPalabras(eliminarPuntuacion(aMinusculas(texto)));
     vector<string> filtradas;
     for (const string& p : palabras)
         if (stopwords.find(p) == stopwords.end())
@@ -264,9 +249,7 @@ FUNCION insertarToken(token, idToken):
             nodo = nodo.children[letra]
             nodo.ids.agregar(idToken)
 ```
- 
-El límite de 25 caracteres por sufijo es un balance entre velocidad y uso de memoria.
- 
+
 ### Algoritmo de búsqueda
  
 ```
@@ -363,11 +346,3 @@ Sinopsis: A bartender is working at a saloon, serving drinks...
 3. Volver
 Opcion:
 ```
- 
-Funcionalidades implementadas:
-- Busqueda por palabras o frases — encuentra peliculas por cualquier subcadena en titulo o sinopsis
-- Busqueda por tag — busca por director, genero o actor
-- Paginacion — muestra 5 resultados a la vez con opcion de ver mas
-- Likes — marca peliculas favoritas
-- Ver mas tarde — guarda peliculas para ver despues
-- Recomendaciones — sugiere peliculas similares a las que diste like
