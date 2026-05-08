@@ -227,6 +227,8 @@ sufijo "s":       raiz -> s                            [pelicula #1]
 - **Frase (varias palabras)**: la frase se divide en palabras individuales y cada palabra se busca por separado. Luego se realiza la interseccion de resultados para obtener las peliculas que contienen todas las palabras buscadas.
 - **Busqueda por tags**: campos como director, cast y genero tambien son tokenizados e insertados en el trie, permitiendo realizar busquedas especificas sobre esos atributos.
 
+![Suffix Trie](https://github.com/Walternvm/demoProyectoProgra3/blob/main/suffix_trie.jpeg)
+
 ---
 
 ### Algoritmo de insercion
